@@ -43,18 +43,20 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-base-200">
-      <div className="card w-full max-w-sm shadow-xl bg-base-100">
-        <form onSubmit={handleSignup} className="card-body">
-          <h2 className="card-title justify-center">Sign Up</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 p-6">
+      <div className="w-full max-w-sm bg-gray-900/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 text-white">
+        <h2 className="text-3xl font-extrabold text-center mb-8 bg-gradient-to-r from-pink-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">
+          Sign Up
+        </h2>
 
+        <form onSubmit={handleSignup} className="space-y-5">
           <input
             type="email"
             name="email"
             placeholder="Email"
-            className="input input-bordered"
             value={form.email}
             onChange={handleChange}
+            className="w-full p-4 rounded-2xl border border-gray-700 bg-gray-800 placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-pink-500 transition shadow-md"
             required
           />
 
@@ -62,21 +64,19 @@ export default function SignupPage() {
             type="password"
             name="password"
             placeholder="Password"
-            className="input input-bordered"
             value={form.password}
             onChange={handleChange}
+            className="w-full p-4 rounded-2xl border border-gray-700 bg-gray-800 placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-pink-500 transition shadow-md"
             required
           />
 
-          <div className="form-control mt-4">
-            <button
-              type="submit"
-              className="btn btn-primary w-full"
-              disabled={loading}
-            >
-              {loading ? "Signing up..." : "Sign Up"}
-            </button>
-          </div>
+          <button
+            type="submit"
+            className="w-full py-3 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 hover:from-pink-400 hover:via-purple-400 hover:to-indigo-400 rounded-2xl font-semibold text-lg transition shadow-xl disabled:opacity-50"
+            disabled={loading}
+          >
+            {loading ? "Signing up..." : "Sign Up"}
+          </button>
         </form>
       </div>
     </div>
