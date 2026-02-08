@@ -1,217 +1,280 @@
-# AI-Ticket-Assistant - ChaiCode
+🚀 AI Ticket Assistant
 
-Welcome to the AI-Powered Ticket Management System!
-This course is a part of Chaicode youtube video series. This project is a web application that uses AI to automatically categorize, prioritize, and assign support tickets to the most appropriate moderators.
+An AI-powered smart ticket management system built by me, where support tickets are automatically analyzed, prioritized, and assigned to the most relevant moderators using AI.
 
-# AI-Powered Ticket Management System
+I built this project while learning backend architecture and AI integrations.
+I learned the core concepts from Hitesh Choudhary Sir, but the implementation, debugging, architecture fixes, AI integration issues, and production-level handling were done by me.
 
-A smart ticket management system that uses AI to automatically categorize, prioritize, and assign support tickets to the most appropriate moderators.
+🧠 What This Project Does
 
-## 🚀 Features
+This system:
 
-- **AI-Powered Ticket Processing**
+Accepts support tickets from users
 
-  - Automatic ticket categorization
-  - Smart priority assignment
-  - Skill-based moderator matching
-  - AI-generated helpful notes for moderators
+Uses AI to analyze ticket content
 
-- **Smart Moderator Assignment**
+Determines:
 
-  - Automatic matching of tickets to moderators based on skills
-  - Fallback to admin assignment if no matching moderator found
-  - Skill-based routing system
+Priority
 
-- **User Management**
+Required technical skills
 
-  - Role-based access control (User, Moderator, Admin)
-  - Skill management for moderators
-  - User authentication with JWT
+Helpful notes
 
-- **Background Processing**
-  - Event-driven architecture using Inngest
-  - Automated email notifications
-  - Asynchronous ticket processing
+Automatically assigns the best matching moderator
 
-## 🛠️ Tech Stack
+Falls back to admin if no matching skill found
 
-- **Backend**: Node.js with Express
-- **Database**: MongoDB
-- **Authentication**: JWT
-- **Background Jobs**: Inngest
-- **AI Integration**: Google Gemini API
-- **Email**: Nodemailer with Mailtrap
-- **Development**: Nodemon for hot reloading
+Sends email notifications
 
-## 📋 Prerequisites
+Processes everything asynchronously using background jobs
 
-- Node.js (v14 or higher)
-- MongoDB
-- Google Gemini API key
-- Mailtrap account (for email testing)
+⚙️ Features I Implemented
+🔹 AI-Based Ticket Processing
 
-## ⚙️ Installation
+AI generates summary
 
-1. **Clone the repository**
+AI sets priority (low / medium / high)
 
-   ```bash
-   git clone <repository-url>
-   cd ai-ticket-assistant
-   ```
+AI extracts required skills
 
-2. **Install dependencies**
+AI generates helpful notes for moderators
 
-   ```bash
-   npm install
-   ```
+JSON parsing & validation from AI response
 
-3. **Environment Setup**
-   Create a `.env` file in the root directory with the following variables:
+🔹 Smart Moderator Assignment Logic
 
-   ```env
-   # MongoDB
-   MONGO_URI=your_mongodb_uri
+Regex-based skill matching
 
-   # JWT
-   JWT_SECRET=your_jwt_secret
+Case-insensitive matching
 
-   # Email (Mailtrap)
-   MAILTRAP_SMTP_HOST=your_mailtrap_host
-   MAILTRAP_SMTP_PORT=your_mailtrap_port
-   MAILTRAP_SMTP_USER=your_mailtrap_user
-   MAILTRAP_SMTP_PASS=your_mailtrap_password
+Fallback to admin if no skill match
 
-   # AI (Gemini)
-   GEMINI_API_KEY=your_gemini_api_key
+Automatic assignment update in DB
 
-   # Application
-   APP_URL=http://localhost:3000
-   ```
+Email notification after assignment
 
-## 🚀 Running the Application
+🔹 Role-Based System
 
-1. **Start the main server**
+User → Can create tickets
 
-   ```bash
-   npm run dev
-   ```
+Moderator → Gets assigned tickets based on skills
 
-2. **Start the Inngest dev server**
-   ```bash
-   npm run inngest-dev
-   ```
+Admin → Fallback assignment & user control
 
-## 📝 API Endpoints
+🔹 Background Job Architecture
 
-### Authentication
+Used Inngest for event-driven processing
 
-- `POST /api/auth/signup` - Register a new user
-- `POST /api/auth/login` - Login and get JWT token
+Triggered ticket/created event
 
-### Tickets
+Processed AI outside step.run to avoid retries
 
-- `POST /api/tickets` - Create a new ticket
-- `GET /api/tickets` - Get all tickets for logged-in user
-- `GET /api/tickets/:id` - Get ticket details
+Used NonRetriableError for safe failure handling
 
-### Admin
+🛠 Tech Stack
 
-- `GET /api/auth/users` - Get all users (Admin only)
-- `POST /api/auth/update-user` - Update user role & skills (Admin only)
+Backend:
 
-## 🔄 Ticket Processing Flow
+Node.js
 
-1. **Ticket Creation**
+Express.js
 
-   - User submits a ticket with title and description
-   - System creates initial ticket record
+MongoDB (Mongoose)
 
-2. **AI Processing**
+Authentication:
 
-   - Inngest triggers `on-ticket-created` event
-   - AI analyzes ticket content
-   - Generates:
-     - Required skills
-     - Priority level
-     - Helpful notes
-     - Ticket type
+JWT
 
-3. **Moderator Assignment**
+Background Jobs:
 
-   - System searches for moderators with matching skills
-   - Uses regex-based skill matching
-   - Falls back to admin if no match found
-   - Updates ticket with assignment
+Inngest
 
-4. **Notification**
-   - Sends email to assigned moderator
-   - Includes ticket details and AI-generated notes
+AI:
 
-## 🧪 Testing
+Google Gemini API
 
-1. **Start the Inngest dev server**
+Email:
 
-   ```bash
-   npm run inngest-dev
-   ```
+Nodemailer
 
-   This will start the Inngest development server at http://localhost:8288
+Mailtrap
 
-2. **Test Ticket Creation**
-   ```bash
-   curl -X POST http://localhost:3000/api/tickets \
-   -H "Content-Type: application/json" \
-   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-   -d '{
-     "title": "Database Connection Issue",
-     "description": "Experiencing intermittent database connection timeouts"
-   }'
-   ```
+💥 Real Issues I Faced & Solved
 
-## 🔍 Troubleshooting
+This project was NOT smooth 😅
+I faced multiple real-world issues:
 
-### Common Issues
+❌ 1. Gemini 404 Model Errors
 
-1. **Port Conflicts**
-   If you see "address already in use" error:
+Error:
 
-   ```bash
-   # Find process using port 8288
-   lsof -i :8288
-   # Kill the process
-   kill -9 <PID>
-   ```
+models/gemini-1.0-pro is not found for API version v1beta
 
-2. **AI Processing Errors**
 
-   - Verify GEMINI_API_KEY in .env
-   - Check API quota and limits
-   - Validate request format
+Cause:
 
-3. **Email Issues**
-   - Verify Mailtrap credentials
-   - Check SMTP settings
-   - Monitor email delivery logs
+Wrong model naming
 
-## 📚 Dependencies
+API version mismatch
 
-- `@inngest/agent-kit`: ^0.7.3
-- `bcrypt`: ^5.1.1
-- `cors`: ^2.8.5
-- `dotenv`: ^16.5.0
-- `express`: ^5.1.0
-- `inngest`: ^3.35.0
-- `jsonwebtoken`: ^9.0.2
-- `mongoose`: ^8.13.2
-- `nodemailer`: ^6.10.1
+Google endpoint differences
 
-## 🤝 Contributing
+Fix:
 
-we don't accept contributions for this project, as this is a part of a video and code files needs to given as it is.
+Switched to correct Gemini SDK
 
-## 🙏 Acknowledgments
+Handled response parsing manually
 
-- Inngest for background job processing
-- Google Gemini for AI capabilities
-- Mailtrap for email testing
-- MongoDB for database
+Added JSON extraction with regex
+
+Added fallback handling if AI fails
+
+❌ 2. AI Returning Null
+
+Problem:
+AI sometimes returned:
+
+AI RESPONSE: null
+
+
+Fix:
+
+Added safe parsing logic
+
+Multiple fallback response paths
+
+Ensured valid JSON extraction
+
+Added default priority fallback
+
+❌ 3. Random Moderator Assignment
+
+Problem:
+Ticket always got assigned to admin.
+
+Cause:
+relatedSkills was empty because AI failed.
+
+Fix:
+
+Added logging for skills
+
+Added regex-based skill match
+
+Added proper skill extraction validation
+
+❌ 4. Inngest Retry Loop Issue
+
+Function kept triggering repeatedly.
+
+Fix:
+
+Moved AI call outside step.run
+
+Used NonRetriableError
+
+Controlled DB updates carefully
+
+❌ 5. GitHub 403 Error
+
+Problem:
+Could not push to original repo.
+
+Cause:
+Tried pushing to someone else's repository.
+
+Fix:
+
+Changed remote origin
+
+Created personal repo
+
+Used Personal Access Token
+
+🔄 How Ticket Processing Works (My Architecture)
+
+User creates ticket
+
+Ticket stored with status TODO
+
+Event ticket/created fired
+
+Inngest function triggers
+
+AI analyzes ticket
+
+DB updated to:
+
+IN_PROGRESS
+
+priority
+
+helpfulNotes
+
+relatedSkills
+
+Moderator matched via skills
+
+Email sent
+
+Assignment saved
+
+📦 Environment Setup
+
+Create .env file:
+
+MONGO_URI=your_mongodb_uri
+JWT_SECRET=your_jwt_secret
+
+MAILTRAP_SMTP_HOST=your_host
+MAILTRAP_SMTP_PORT=your_port
+MAILTRAP_SMTP_USER=your_user
+MAILTRAP_SMTP_PASS=your_pass
+
+GEMINI_API_KEY=your_gemini_key
+APP_URL=http://localhost:3000
+
+🚀 Running the Project
+
+Start backend:
+
+npm run dev
+
+
+Start Inngest:
+
+npm run inngest-dev
+
+📚 What I Learned
+
+Real-world AI integration debugging
+
+Background job architecture
+
+Handling third-party API failures
+
+Skill-based routing systems
+
+Regex-based dynamic matching
+
+Safe async processing
+
+Production-level error handling
+
+Proper Git remote management
+
+💪 Final Thoughts
+
+This project helped me understand:
+
+How AI can automate real workflows
+
+How to debug API-level errors
+
+How to design scalable backend systems
+
+How to handle failure cases gracefully
+
+This is not just a tutorial clone —
+I implemented, debugged, broke, fixed, and rebuilt major parts myself.
