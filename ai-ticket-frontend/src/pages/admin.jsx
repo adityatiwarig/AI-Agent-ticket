@@ -1,118 +1,140 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+const SERVER_URL = import.meta.env.VITE_SERVER_URL;
 
 export default function AdminPanel() {
+  const navigate = useNavigate();
+
   const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
-  const [formData, setFormData] = useState({ role: "", skills: "" });
-  const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const [formData, setFormData] = useState({
+    role: "user",
+    skills: "",
+  });
 
   const token = localStorage.getItem("token");
+  const currentUser = JSON.parse(localStorage.getItem("user"));
 
+  /* =========================
+      HARD GUARD (SAFE)
+  ========================= */
   useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const fetchUsers = async () => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/users`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setUsers(data);
-        setFilteredUsers(data);
-      } else {
-        console.error(data.error);
-      }
-    } catch (err) {
-      console.error("Error fetching users", err);
+    if (!token || !currentUser) {
+      navigate("/");
+      return;
     }
-  };
 
-  const handleEditClick = (user) => {
-    setEditingUser(user.email);
+    if (currentUser.role !== "admin") {
+      navigate("/");
+      return;
+    }
+  }, []); // 👈 EMPTY deps (VERY IMPORTANT)
+
+  /* =========================
+      FETCH USERS
+  ========================= */
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_SERVER_URL}/auth/users`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        const data = await res.json();
+        console.log("ADMIN USERS:", data);
+
+        setUsers(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, [token]);
+
+  /* =========================
+      EDIT
+  ========================= */
+  const handleEdit = (user) => {
+    setEditingUser(user);
     setFormData({
       role: user.role,
-      skills: user.skills?.join(", "),
+      skills: user.skills?.join(", ") || "",
     });
   };
 
-  const handleUpdate = async () => {
+  /* =========================
+      SAVE
+  ========================= */
+  const handleSave = async () => {
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/auth/update-user`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            email: editingUser,
-            role: formData.role,
-            skills: formData.skills
-              .split(",")
-              .map((skill) => skill.trim())
-              .filter(Boolean),
-          }),
-        }
-      );
+      const res = await fetch(`${SERVER_URL}/auth/update-user`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          email: editingUser.email,
+          role: formData.role,
+          skills: formData.skills
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean),
+        }),
+      });
 
       const data = await res.json();
-      if (!res.ok) {
-        console.error(data.error || "Failed to update user");
-        return;
-      }
+      if (!res.ok) throw new Error(data.error);
+
+      // ✅ optimistic update
+      setUsers((prev) =>
+        prev.map((u) => (u.email === editingUser.email ? data.user : u)),
+      );
 
       setEditingUser(null);
-      setFormData({ role: "", skills: "" });
-      fetchUsers();
     } catch (err) {
-      console.error("Update failed", err);
+      alert(err.message);
     }
   };
 
-  const handleSearch = (e) => {
-    const query = e.target.value.toLowerCase();
-    setSearchQuery(query);
-    setFilteredUsers(
-      users.filter((user) => user.email.toLowerCase().includes(query))
-    );
-  };
+  /* =========================
+      UI
+  ========================= */
+  if (loading) {
+    return <p className="text-center mt-10">Loading users...</p>;
+  }
 
   return (
-    <div className="max-w-4xl mx-auto mt-10">
-      <h1 className="text-2xl font-bold mb-6">Admin Panel - Manage Users</h1>
-      <input
-        type="text"
-        className="input input-bordered w-full mb-6"
-        placeholder="Search by email"
-        value={searchQuery}
-        onChange={handleSearch}
-      />
-      {filteredUsers.map((user) => (
-        <div
-          key={user._id}
-          className="bg-base-100 shadow rounded p-4 mb-4 border"
-        >
+    <div className="max-w-4xl mx-auto mt-10 p-4">
+      <h1 className="text-3xl font-bold mb-6">Admin Panel</h1>
+
+      {users.length === 0 && <p className="text-gray-400">No users found</p>}
+
+      {users.map((user) => (
+        <div key={user._id} className="border p-4 rounded mb-4">
           <p>
-            <strong>Email:</strong> {user.email}
+            <b>Email:</b> {user.email}
           </p>
           <p>
-            <strong>Current Role:</strong> {user.role}
+            <b>Role:</b> {user.role}
           </p>
           <p>
-            <strong>Skills:</strong>{" "}
-            {user.skills && user.skills.length > 0
-              ? user.skills.join(", ")
-              : "N/A"}
+            <b>Skills:</b> {user.skills?.join(", ") || "N/A"}
           </p>
 
-          {editingUser === user.email ? (
-            <div className="mt-4 space-y-2">
+          {editingUser?._id === user._id ? (
+            <div className="mt-3 space-y-2">
               <select
                 className="select select-bordered w-full"
                 value={formData.role}
@@ -126,8 +148,6 @@ export default function AdminPanel() {
               </select>
 
               <input
-                type="text"
-                placeholder="Comma-separated skills"
                 className="input input-bordered w-full"
                 value={formData.skills}
                 onChange={(e) =>
@@ -136,10 +156,7 @@ export default function AdminPanel() {
               />
 
               <div className="flex gap-2">
-                <button
-                  className="btn btn-success btn-sm"
-                  onClick={handleUpdate}
-                >
+                <button className="btn btn-success btn-sm" onClick={handleSave}>
                   Save
                 </button>
                 <button
@@ -152,8 +169,8 @@ export default function AdminPanel() {
             </div>
           ) : (
             <button
-              className="btn btn-primary btn-sm mt-2"
-              onClick={() => handleEditClick(user)}
+              className="btn btn-primary btn-sm mt-3"
+              onClick={() => handleEdit(user)}
             >
               Edit
             </button>

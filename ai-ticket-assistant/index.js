@@ -1,25 +1,29 @@
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
+import dotenv from "dotenv";
 import { serve } from "inngest/express";
+
 import userRoutes from "./routes/user.js";
 import ticketRoutes from "./routes/ticket.js";
+
 import { inngest } from "./inngest/client.js";
 import { onUserSignup } from "./inngest/functions/on-signup.js";
 import { onTicketCreated } from "./inngest/functions/on-ticket-create.js";
 
-import dotenv from "dotenv";
 dotenv.config();
 
-const PORT = process.env.PORT || 3000;
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 
+// Routes
 app.use("/api/auth", userRoutes);
 app.use("/api/tickets", ticketRoutes);
 
+// 🔥 IMPORTANT: Inngest handler MUST be before listen
 app.use(
   "/api/inngest",
   serve({
@@ -28,10 +32,15 @@ app.use(
   })
 );
 
+// 🔥 Debug log to confirm function loaded
+console.log("Loaded function:", onTicketCreated?.id);
+
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
-    console.log("MongoDB connected ✅");
-    app.listen(PORT, () => console.log("🚀 Server at http://localhost:3000"));
+    console.log("✅ MongoDB connected");
+    app.listen(PORT, () =>
+      console.log(`🚀 Server running at http://localhost:${PORT}`)
+    );
   })
-  .catch((err) => console.error("❌ MongoDB error: ", err));
+  .catch((err) => console.error("❌ Mongo error", err));

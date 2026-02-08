@@ -8,10 +8,12 @@ import {
 } from "../controllers/user.js";
 
 import { authenticate } from "../middlewares/auth.js";
+import { isAdmin } from "../middlewares/isAdmin.js";
+
 const router = express.Router();
 
-router.post("/update-user", authenticate, updateUser);
-router.get("/users", authenticate, getUsers);
+router.get("/users", authenticate, isAdmin, getUsers);
+router.post("/update-user", authenticate, isAdmin, updateUser);
 
 router.post("/signup", signup);
 router.post("/login", login);
